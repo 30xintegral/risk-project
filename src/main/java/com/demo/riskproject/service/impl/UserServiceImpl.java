@@ -37,6 +37,7 @@ public class UserServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         UserPrincipal userPrincipal = new UserPrincipal();
+        userPrincipal.setUsername(user.getUsername());
         userPrincipal.setPassword(user.getPassword());
         userPrincipal.setId(user.getId());
         userPrincipal.setRoles(user.getRoles());
