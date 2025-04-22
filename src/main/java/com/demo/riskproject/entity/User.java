@@ -32,6 +32,9 @@ public class User {
     @Column(name = "role")
     private Set<Role> roles = new HashSet<>();
 
+    @OneToMany(mappedBy = "user")
+    private Set<UserTask> userTasks = new HashSet<>();
+
     private Boolean isDeleted;
 
     private Boolean isLocked;
