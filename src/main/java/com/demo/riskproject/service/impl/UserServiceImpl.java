@@ -27,8 +27,8 @@ public class UserServiceImpl implements UserDetailsService {
         userPrincipal.setPassword(user.getPassword());
         userPrincipal.setUser(user);
         userPrincipal.setRoles(user.getRoles());
-        userPrincipal.setIsLocked(user.getIsLocked());
-        userPrincipal.setIsDeleted(user.getIsDeleted());
+        userPrincipal.setLocked(user.getLocked());
+        userPrincipal.setDeleted(user.getDeleted());
 
         return userPrincipal;
     }
@@ -41,8 +41,8 @@ public class UserServiceImpl implements UserDetailsService {
         userPrincipal.setPassword(user.getPassword());
         userPrincipal.setId(user.getId());
         userPrincipal.setRoles(user.getRoles());
-        userPrincipal.setIsLocked(user.getIsLocked());
-        userPrincipal.setIsDeleted(user.getIsDeleted());
+        userPrincipal.setLocked(user.getLocked());
+        userPrincipal.setDeleted(user.getDeleted());
         userPrincipal.setEmail(user.getEmail());
         userPrincipal.setUser(user);
 

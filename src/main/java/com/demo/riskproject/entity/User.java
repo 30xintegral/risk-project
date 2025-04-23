@@ -35,7 +35,15 @@ public class User {
     @OneToMany(mappedBy = "user")
     private Set<UserTask> userTasks = new HashSet<>();
 
-    private Boolean isDeleted;
+    private Boolean deleted;
 
-    private Boolean isLocked;
+    private Boolean locked;
+
+    public void addRole(Role role) {
+        this.roles.add(role);
+    }
+
+    public void addUserTask(UserTask userTask) {
+        this.userTasks.add(userTask);
+    }
 }
