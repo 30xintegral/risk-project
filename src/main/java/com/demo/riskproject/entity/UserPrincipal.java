@@ -14,10 +14,9 @@ import java.util.*;
 public class UserPrincipal implements UserDetails {
     private Long id;
     private String username;
-    private String email;
     private String password;
-    private Boolean isLocked;
-    private Boolean isDeleted;
+    private Boolean locked;
+    private Boolean deleted;
     private User user;
     private Set<Role> roles = new HashSet<>();
 
@@ -28,7 +27,7 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return !isLocked;
+        return !locked;
     }
 
     @Override
@@ -60,7 +59,4 @@ public class UserPrincipal implements UserDetails {
         return username;
     }
 
-    public String getEmail() {
-        return email;
-    }
 }
