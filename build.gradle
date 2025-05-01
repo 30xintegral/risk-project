@@ -36,6 +36,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.slf4j:slf4j-api:2.0.17'
 
 //    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 

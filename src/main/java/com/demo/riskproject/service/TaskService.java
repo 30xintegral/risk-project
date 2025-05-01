@@ -11,4 +11,6 @@ public interface TaskService {
     Set<TaskResponse> getIncompleteTasksByUser(Long userId, int page, int size);
 
     void addTask(TaskRequest taskRequest);
+
+    TaskResponse getTaskById(Long taskId);
 }

@@ -18,9 +18,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -30,11 +32,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenResponse login(LoginDTO loginDTO) {
-        User user = userRepository.findByEmail(loginDTO.getEmail()).orElseThrow(() -> new NotFoundException("User not found"));
+        User user = userRepository.findByUsername(loginDTO.getUsername()).orElseThrow(() -> new NotFoundException("User not found"));
         if(user.getDeleted() || user.getLocked()) {
             throw new TerminatedException("User is locked or deleted.");
         }
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return jwtTokenProvider.generateToken(authentication);
     }
@@ -49,7 +51,6 @@ public class AuthServiceImpl implements AuthService {
         try{
             User user = new User();
             user.setUsername(registrationDTO.getUsername());
-            user.setEmail(registrationDTO.getEmail());
             user.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
             user.setLocked(false);
             user.setDeleted(false);
@@ -66,7 +67,6 @@ public class AuthServiceImpl implements AuthService {
         try{
             User user = new User();
             user.setUsername(registrationDTO.getUsername());
-            user.setEmail(registrationDTO.getEmail());
             user.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
             user.setLocked(false);
             user.setDeleted(false);
@@ -82,7 +82,6 @@ public class AuthServiceImpl implements AuthService {
         try{
             User user = new User();
             user.setUsername(registrationDTO.getUsername());
-            user.setEmail(registrationDTO.getEmail());
             user.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
             user.setLocked(false);
             user.setDeleted(false);

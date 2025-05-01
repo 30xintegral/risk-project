@@ -1,12 +1,14 @@
 package com.demo.riskproject.dto.request;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class RegistrationDTO {
+    @NotEmpty
     private String username;
-    private String email;
+    @NotEmpty
     private String password;
 }

@@ -14,7 +14,6 @@ import java.util.*;
 public class UserPrincipal implements UserDetails {
     private Long id;
     private String username;
-    private String email;
     private String password;
     private Boolean locked;
     private Boolean deleted;
@@ -60,7 +59,4 @@ public class UserPrincipal implements UserDetails {
         return username;
     }
 
-    public String getEmail() {
-        return email;
-    }
 }

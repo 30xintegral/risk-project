@@ -16,6 +16,7 @@ import com.demo.riskproject.repository.UserRepository;
 import com.demo.riskproject.repository.UserTaskRepository;
 import com.demo.riskproject.service.UserTaskService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,16 +28,15 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class UserTaskServiceImpl implements UserTaskService {
     private final UserTaskRepository userTaskRepository;
     private final TaskRepository taskRepository;
@@ -45,10 +45,12 @@ public class UserTaskServiceImpl implements UserTaskService {
     private final UserRepository userRepository;
     private final S3Client s3Client;
 
+
     @Value("${aws_s3_bucket_name}")
     private String bucketName;
 
-    private final String s3NewsImagesUrl = "https://30xinte-test.s3.eu-north-1.amazonaws.com/projects/";
+    private final String s3ProjectsUrl = "https://30xinte-test.s3.eu-north-1.amazonaws.com/projects/";
+
 
 
     @Override
@@ -59,7 +61,7 @@ public class UserTaskServiceImpl implements UserTaskService {
         List<UserTaskResponse> userTaskResponses = new ArrayList<>();
         for (UserTask userTask : userTasks) {
             UserTaskResponse userTaskResponse = userTaskMapper.toResponse(userTask);
-            userTaskResponse.setProjectUrl(s3NewsImagesUrl+userTask.getProjectUrl());
+            userTaskResponse.setProjectUrl(s3ProjectsUrl +userTask.getProjectUrl());
             Task task = userTask.getTask();
             TaskResponse taskResponse = taskMapper.toResponse(task);
             userTaskResponse.setTask(taskResponse);
@@ -97,6 +99,7 @@ public class UserTaskServiceImpl implements UserTaskService {
                     //projecturl is going to be null by default
                     return userTask;
                 }).toList();
+        log.info("user tasks list is ready");
         userTaskRepository.saveAll(userTasks);
     }
 
