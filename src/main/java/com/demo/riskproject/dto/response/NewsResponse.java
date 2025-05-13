@@ -1,12 +1,14 @@
 package com.demo.riskproject.dto.response;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Builder
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class NewsResponse {
     private Long id;
     private String title;

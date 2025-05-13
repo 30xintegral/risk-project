@@ -60,11 +60,24 @@ public class UserTaskServiceImpl implements UserTaskService {
         List<UserTask> userTasks = userTaskPage.getContent();
         List<UserTaskResponse> userTaskResponses = new ArrayList<>();
         for (UserTask userTask : userTasks) {
-            UserTaskResponse userTaskResponse = userTaskMapper.toResponse(userTask);
-            userTaskResponse.setProjectUrl(s3ProjectsUrl +userTask.getProjectUrl());
             Task task = userTask.getTask();
-            TaskResponse taskResponse = taskMapper.toResponse(task);
-            userTaskResponse.setTask(taskResponse);
+            TaskResponse taskResponse = TaskResponse.builder().
+                    id(task.getId()).
+                    description(task.getDescription()).
+                    name(task.getName()).
+                    point(task.getPoint()).
+                    build();
+
+
+            UserTaskResponse userTaskResponse = UserTaskResponse.builder().
+                    isCompleted(userTask.getIsCompleted()).
+                    task(taskResponse).
+                    userId(userId).
+                    id(userTask.getId()).
+                    submittedAt(userTask.getSubmittedAt()).
+                    projectUrl(s3ProjectsUrl + userTask.getProjectUrl()).
+                    build();
+
             userTaskResponses.add(userTaskResponse);
         }
         return userTaskResponses;
@@ -77,10 +90,23 @@ public class UserTaskServiceImpl implements UserTaskService {
         List<UserTask> userTasks = userTaskPage.getContent();
         List<UserTaskResponse> userTaskResponses = new ArrayList<>();
         for (UserTask userTask : userTasks) {
-            UserTaskResponse userTaskResponse = userTaskMapper.toResponse(userTask);
             Task task = userTask.getTask();
-            TaskResponse taskResponse = taskMapper.toResponse(task);
-            userTaskResponse.setTask(taskResponse);
+            TaskResponse taskResponse = TaskResponse.builder().
+                    id(task.getId()).
+                    description(task.getDescription()).
+                    name(task.getName()).
+                    point(task.getPoint()).
+                    build();
+
+            UserTaskResponse userTaskResponse = UserTaskResponse.builder().
+                    isCompleted(userTask.getIsCompleted()).
+                    task(taskResponse).
+                    userId(userId).
+                    id(userTask.getId()).
+                    submittedAt(userTask.getSubmittedAt()).
+                    projectUrl(s3ProjectsUrl + userTask.getProjectUrl()).
+                    build();
+
             userTaskResponses.add(userTaskResponse);
         }
         return userTaskResponses;
@@ -90,12 +116,18 @@ public class UserTaskServiceImpl implements UserTaskService {
     public void assignTasktoUsers(UserTaskRequest userTaskRequest) {
         Task task = taskRepository.findById(userTaskRequest.getTaskId()).orElseThrow(() -> new NotFoundException("Task not found"));
         List<User> users = userRepository.findAllById(userTaskRequest.getUserIds());
-        //here we need to also inform assigner if there is no specific user id found.
+        //here we also need to inform assigner if there is no specific user id found.
         List<UserTask> userTasks = users.stream()
                 .map(user -> {
-                    UserTask userTask = userTaskMapper.toEntity(userTaskRequest);
-                    userTask.setTask(task);
-                    userTask.setSubmittedAt(LocalDateTime.now());
+                    UserTask userTask = UserTask.builder().
+                    isCompleted(false).
+                    task(task).
+                    user(user).build();
+
+
+//                    UserTask userTask = userTaskMapper.toEntity(userTaskRequest);
+//                    userTask.setTask(task);
+//                    userTask.setSubmittedAt(LocalDateTime.now());
                     //projecturl is going to be null by default
                     return userTask;
                 }).toList();
@@ -106,15 +138,17 @@ public class UserTaskServiceImpl implements UserTaskService {
     @Override
     public void submitTask(SingleUserTaskSubmission singleUserTaskSubmission) {
         User user = userRepository.findById(singleUserTaskSubmission.getUserId()).orElseThrow(()-> new NotFoundException("User not found"));
-        List<UserTask> userTasks = userTaskRepository.findAllByUserIdAndIsCompleted(singleUserTaskSubmission.getUserId(), true);
-        Task task = new Task();
+        List<UserTask> userTasks = userTaskRepository.findAllByUserIdAndIsCompleted(singleUserTaskSubmission.getUserId(), false);
         UserTask userTask = new UserTask();
+        boolean found = false;
         for (UserTask userTaskIterator : userTasks) {
             if (userTaskIterator.getTask().getId().equals(singleUserTaskSubmission.getTaskId())) {
-                task=userTaskIterator.getTask();
-                userTask=userTaskIterator;
+                userTask = userTaskIterator;
+                found = true;
                 break;
             }
+        }
+        if (!found) {
             throw new NotFoundException("Task not found");
         }
         try{
@@ -129,14 +163,12 @@ public class UserTaskServiceImpl implements UserTaskService {
         } catch (Exception e) {
             throw new TerminatedException("An error occurred while uploading task project");
         }
-        userTask.setUser(user);
-        userTask.setTask(task);
+
         userTask.setProjectUrl(singleUserTaskSubmission.getProject().getOriginalFilename());
         userTask.setSubmittedAt(LocalDateTime.now());
         userTask.setIsCompleted(true);
-        user.addUserTask(userTask);
+
         userTaskRepository.save(userTask);
-        userRepository.save(user);
     }
 
 }
