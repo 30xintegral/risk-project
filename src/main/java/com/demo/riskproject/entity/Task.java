@@ -3,8 +3,8 @@ package com.demo.riskproject.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,6 +12,9 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,8 +25,9 @@ public class Task {
 
     private String description;
 
-    @Min(1)
-    @Max(5)
+    @Column(nullable = false)
+    @Min(value = 1, message = "Point must be at least 1")
+    @Max(value = 5, message = "Point must be at most 5")
     private Byte point;
 
     @OneToMany(mappedBy = "task")

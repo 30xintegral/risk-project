@@ -33,8 +33,6 @@ public class NewsServiceImpl implements NewsService {
     @Override
     public void addNews(NewsRequest newsRequest) {
         try{
-            News news = newsMapper.toEntity(newsRequest);
-            news.setPublishDate(LocalDateTime.now());
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(newsRequest.getImage().getOriginalFilename())
@@ -43,7 +41,12 @@ public class NewsServiceImpl implements NewsService {
             InputStream inputStream = new BufferedInputStream(newsRequest.getImage().getInputStream());
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, newsRequest.getImage().getSize()));
             log.info("news image uploaded to s3client ");
-            news.setImageUrl(newsRequest.getImage().getOriginalFilename());
+            News news = News.builder()
+                    .title(newsRequest.getTitle())
+                    .content(newsRequest.getContent())
+                    .publishDate(LocalDateTime.now())
+                    .imageUrl(newsRequest.getImage().getOriginalFilename())
+                    .build();
             newsRepository.save(news);
         }
         catch (Exception e){

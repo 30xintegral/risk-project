@@ -45,13 +45,22 @@ public class TaskServiceImpl implements TaskService {
         if (!taskRepository.findByNameContainingIgnoreCase(taskRequest.getName()).isEmpty()) {
             throw new TerminatedException("Task like this already exists");
         }
-        Task task = taskMapper.toEntity(taskRequest);
+        Task task = Task.builder().
+                name(taskRequest.getName()).
+                description(taskRequest.getDescription()).
+                point(taskRequest.getPoint()).
+                build();
         taskRepository.save(task);
     }
 
     @Override
     public TaskResponse getTaskById(Long taskId) {
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("task not found"));
-        return taskMapper.toResponse(task);
+        return TaskResponse.builder().
+                id(task.getId()).
+                name(task.getName()).
+                point(task.getPoint()).
+                description(task.getDescription()).
+                build();
     }
 }

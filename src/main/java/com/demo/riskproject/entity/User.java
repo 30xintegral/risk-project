@@ -2,8 +2,7 @@ package com.demo.riskproject.entity;
 
 import com.demo.riskproject.enums.Role;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,6 +11,9 @@ import java.util.Set;
 @Getter
 @Setter
 @Table(name = "users")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +25,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @ElementCollection(targetClass = Role.class)
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "role")

@@ -1,14 +1,16 @@
 package com.demo.riskproject.dto.response;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Builder
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserTaskResponse {
     private Long id;
     private Long userId;

@@ -13,10 +13,4 @@ import org.springframework.web.bind.annotation.*;
 public class NewsController {
     private final NewsService newsService;
 
-    @PostMapping("/upload")
-    public void uploadNews(@ModelAttribute NewsRequest newsRequest) {
-      log.info("News upload started");
-      newsService.addNews(newsRequest);
-      log.info("News upload finished");
-    }
 }

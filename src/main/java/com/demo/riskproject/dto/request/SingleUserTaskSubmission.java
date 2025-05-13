@@ -9,12 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Setter
 public class SingleUserTaskSubmission {
-    @NotNull(message = "Task ID is required")
     private Long taskId;
 
-    @NotEmpty(message = "User ID is required")
     private Long userId;
-
 
     private MultipartFile project;
 }

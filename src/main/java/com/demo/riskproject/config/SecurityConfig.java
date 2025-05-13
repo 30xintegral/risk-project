@@ -74,7 +74,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/auth/refresh").permitAll()
                         .requestMatchers("/admin/**").permitAll()
-                        .requestMatchers("/news/**").hasRole("CONTENTMANAGER")
+                        .requestMatchers("/news/upload").hasAuthority("CONTENTMANAGER")
                         .requestMatchers("/tasks/**").authenticated()
                         .anyRequest().authenticated()
                 )

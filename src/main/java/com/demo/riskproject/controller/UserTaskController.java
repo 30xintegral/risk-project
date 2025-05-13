@@ -26,13 +26,8 @@ public class UserTaskController {
         return userTaskService.getIncompleteUserTasks(userId, page, size);
     }
 
-    @PostMapping("/assign")
-    public void assignTaskToUsers(@Valid @RequestBody UserTaskRequest userTaskRequest) {
-        userTaskService.assignTasktoUsers(userTaskRequest);
-    }
-
-    @PostMapping("/submit")
-    public void submitTask(@Valid @RequestBody SingleUserTaskSubmission singleUserTaskSubmission) {
+    @PatchMapping("/submit")
+    public void submitTask(@ModelAttribute @Valid SingleUserTaskSubmission singleUserTaskSubmission) {
         userTaskService.submitTask(singleUserTaskSubmission);
     }
 }
