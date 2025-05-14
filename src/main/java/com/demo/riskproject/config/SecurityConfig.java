@@ -73,7 +73,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/register").permitAll()
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/auth/refresh").permitAll()
-                        .requestMatchers("/admin/**").permitAll()
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/news/upload").hasAuthority("CONTENTMANAGER")
                         .requestMatchers("/tasks/**").authenticated()
                         .anyRequest().authenticated()

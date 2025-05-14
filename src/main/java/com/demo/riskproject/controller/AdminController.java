@@ -43,12 +43,6 @@ public class AdminController {
         log.info("Getting task: {}", taskId);
         return taskService.getTaskById(taskId);
     }
-    @PostMapping("/upload")
-    public void uploadNews(@ModelAttribute NewsRequest newsRequest) {
-        log.info("News upload started");
-        newsService.addNews(newsRequest);
-        log.info("News upload finished");
-    }
     @PostMapping("/assign")
     public void assignTaskToUsers(@RequestBody @Valid UserTaskRequest userTaskRequest) {
         userTaskService.assignTasktoUsers(userTaskRequest);
