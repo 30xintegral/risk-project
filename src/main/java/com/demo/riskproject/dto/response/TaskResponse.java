@@ -11,5 +11,5 @@ public class TaskResponse {
     private Long id;
     private String name;
     private String description;
-    private Byte point;
+    private Integer point;
 }

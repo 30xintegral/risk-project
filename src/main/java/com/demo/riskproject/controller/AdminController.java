@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin/api-v1/")
+@RequestMapping("/admin")
 @Slf4j
 public class AdminController {
     private final AuthService authService;
@@ -32,20 +32,6 @@ public class AdminController {
         log.info("content manager register service called from ip:" + request.getRemoteAddr());
         authService.registerContentManager(registrationDTO);
     }
-    @PostMapping("/add-task")
-    public void addTask(@RequestBody @Valid TaskRequest taskRequest) {
-        log.info("Adding task: {}", taskRequest);
-        taskService.addTask(taskRequest);
-        log.info("Task added: {}", taskRequest);
-    }
-    @GetMapping("/task")
-    public TaskResponse getTask(@RequestParam(name = "id") Long taskId) {
-        log.info("Getting task: {}", taskId);
-        return taskService.getTaskById(taskId);
-    }
-    @PostMapping("/assign")
-    public void assignTaskToUsers(@RequestBody @Valid UserTaskRequest userTaskRequest) {
-        userTaskService.assignTasktoUsers(userTaskRequest);
-    }
+
 
 }

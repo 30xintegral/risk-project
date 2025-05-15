@@ -8,7 +8,6 @@ import com.demo.riskproject.entity.Task;
 import java.util.Set;
 
 public interface TaskService {
-    Set<TaskResponse> getIncompleteTasksByUser(Long userId, int page, int size);
 
     void addTask(TaskRequest taskRequest);
 

@@ -15,8 +15,4 @@ public class UserTaskRequest {
     private Long taskId;
 
     private Set<Long> userIds;
-
-    private Boolean isCompleted;
-
-    private String projectUrl;
 }

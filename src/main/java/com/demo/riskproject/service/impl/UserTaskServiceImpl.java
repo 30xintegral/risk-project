@@ -6,6 +6,7 @@ import com.demo.riskproject.dto.response.TaskResponse;
 import com.demo.riskproject.dto.response.UserTaskResponse;
 import com.demo.riskproject.entity.Task;
 import com.demo.riskproject.entity.User;
+import com.demo.riskproject.entity.UserPrincipal;
 import com.demo.riskproject.entity.UserTask;
 import com.demo.riskproject.exception.NotFoundException;
 import com.demo.riskproject.exception.TerminatedException;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -54,39 +56,11 @@ public class UserTaskServiceImpl implements UserTaskService {
 
 
     @Override
-    public List<UserTaskResponse> getCompletedUserTasks(Long userId, int page, int size) {
+    public List<UserTaskResponse> getUserTasks(Boolean isCompleted, int page, int size) {
+        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = userPrincipal.getId();
         Pageable pageable = PageRequest.of(page, size);
-        Page<UserTask> userTaskPage = userTaskRepository.findAllByUserIdAndIsCompleted(userId, true, pageable);
-        List<UserTask> userTasks = userTaskPage.getContent();
-        List<UserTaskResponse> userTaskResponses = new ArrayList<>();
-        for (UserTask userTask : userTasks) {
-            Task task = userTask.getTask();
-            TaskResponse taskResponse = TaskResponse.builder().
-                    id(task.getId()).
-                    description(task.getDescription()).
-                    name(task.getName()).
-                    point(task.getPoint()).
-                    build();
-
-
-            UserTaskResponse userTaskResponse = UserTaskResponse.builder().
-                    isCompleted(userTask.getIsCompleted()).
-                    task(taskResponse).
-                    userId(userId).
-                    id(userTask.getId()).
-                    submittedAt(userTask.getSubmittedAt()).
-                    projectUrl(s3ProjectsUrl + userTask.getProjectUrl()).
-                    build();
-
-            userTaskResponses.add(userTaskResponse);
-        }
-        return userTaskResponses;
-    }
-
-    @Override
-    public List<UserTaskResponse> getIncompleteUserTasks(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<UserTask> userTaskPage = userTaskRepository.findAllByUserIdAndIsCompleted(userId, false, pageable);
+        Page<UserTask> userTaskPage = userTaskRepository.findAllByUserIdAndIsCompleted(userId, isCompleted, pageable);
         List<UserTask> userTasks = userTaskPage.getContent();
         List<UserTaskResponse> userTaskResponses = new ArrayList<>();
         for (UserTask userTask : userTasks) {
@@ -113,7 +87,7 @@ public class UserTaskServiceImpl implements UserTaskService {
     }
 
     @Override
-    public void assignTasktoUsers(UserTaskRequest userTaskRequest) {
+    public void assignTaskToUsers(UserTaskRequest userTaskRequest) {
         Task task = taskRepository.findById(userTaskRequest.getTaskId()).orElseThrow(() -> new NotFoundException("Task not found"));
         List<User> users = userRepository.findAllById(userTaskRequest.getUserIds());
         //here we also need to inform assigner if there is no specific user id found.
@@ -124,10 +98,6 @@ public class UserTaskServiceImpl implements UserTaskService {
                     task(task).
                     user(user).build();
 
-
-//                    UserTask userTask = userTaskMapper.toEntity(userTaskRequest);
-//                    userTask.setTask(task);
-//                    userTask.setSubmittedAt(LocalDateTime.now());
                     //projecturl is going to be null by default
                     return userTask;
                 }).toList();
