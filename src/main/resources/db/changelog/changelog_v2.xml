@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="rename-user-to-users" author="Elvin Mahmudzada">
+        <renameTable oldTableName="user" newTableName="users"/>
+    </changeSet>
+
+    <changeSet id="rename-user_task-to-user_tasks" author="Elvin Mahmudzada">
+        <renameTable oldTableName="user_task" newTableName="user_tasks"/>
+    </changeSet>
+
+</databaseChangeLog>

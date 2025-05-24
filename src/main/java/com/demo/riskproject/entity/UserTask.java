@@ -30,5 +30,8 @@ public class UserTask {
 
     private String projectUrl;
 
+    @Column(nullable = false)
+    private LocalDateTime deadline;
+
     private LocalDateTime submittedAt;
 }

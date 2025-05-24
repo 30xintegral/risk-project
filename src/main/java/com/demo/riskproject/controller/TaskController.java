@@ -14,6 +14,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @RequestMapping("/tasks")
 @Slf4j
+@CrossOrigin(origins = "https://intranet-banking.vercel.app/", allowCredentials = "true")
 public class TaskController {
     private final TaskService taskService;
 

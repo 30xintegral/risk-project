@@ -7,5 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TokenRequest {
+    @NotNull
     private String refreshToken;
 }

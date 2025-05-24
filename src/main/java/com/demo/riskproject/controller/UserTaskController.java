@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/tasks")
+@CrossOrigin(origins = "https://intranet-banking.vercel.app/", allowCredentials = "true")
 public class UserTaskController {
     private final UserTaskService userTaskService;
 

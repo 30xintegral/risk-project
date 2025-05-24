@@ -16,6 +16,7 @@ import com.demo.riskproject.repository.TaskRepository;
 import com.demo.riskproject.repository.UserRepository;
 import com.demo.riskproject.repository.UserTaskRepository;
 import com.demo.riskproject.service.UserTaskService;
+import com.demo.riskproject.service.comparators.DeadlineComparator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,7 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -51,7 +53,8 @@ public class UserTaskServiceImpl implements UserTaskService {
     @Value("${aws_s3_bucket_name}")
     private String bucketName;
 
-    private final String s3ProjectsUrl = "https://30xinte-test.s3.eu-north-1.amazonaws.com/projects/";
+    @Value("${aws_s3_bucket_projects_url}")
+    private String s3ProjectsUrl;
 
 
 
@@ -79,10 +82,13 @@ public class UserTaskServiceImpl implements UserTaskService {
                     id(userTask.getId()).
                     submittedAt(userTask.getSubmittedAt()).
                     projectUrl(s3ProjectsUrl + userTask.getProjectUrl()).
+                    deadline(userTask.getDeadline()).
                     build();
 
             userTaskResponses.add(userTaskResponse);
         }
+        DeadlineComparator deadlineComparator = new DeadlineComparator();
+        userTaskResponses.sort(deadlineComparator); //here we created a deadline comparator for sorting it in ascending order
         return userTaskResponses;
     }
 
@@ -91,11 +97,15 @@ public class UserTaskServiceImpl implements UserTaskService {
         Task task = taskRepository.findById(userTaskRequest.getTaskId()).orElseThrow(() -> new NotFoundException("Task not found"));
         List<User> users = userRepository.findAllById(userTaskRequest.getUserIds());
         //here we also need to inform assigner if there is no specific user id found.
+        if (userTaskRequest.getDeadline() == null) {
+            throw new TerminatedException("Deadline must not be null");
+        }
         List<UserTask> userTasks = users.stream()
                 .map(user -> {
                     UserTask userTask = UserTask.builder().
                     isCompleted(false).
                     task(task).
+                    deadline(userTaskRequest.getDeadline()).
                     user(user).build();
 
                     //projecturl is going to be null by default
@@ -120,6 +130,9 @@ public class UserTaskServiceImpl implements UserTaskService {
         }
         if (!found) {
             throw new NotFoundException("Task not found");
+        }
+        if (LocalDateTime.now().isAfter(userTask.getDeadline())){
+            throw new TerminatedException("It already passed the deadline");
         }
         try{
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()

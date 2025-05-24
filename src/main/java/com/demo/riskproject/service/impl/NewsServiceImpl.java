@@ -28,7 +28,9 @@ public class NewsServiceImpl implements NewsService {
 
     @Value("${aws_s3_bucket_name}")
     private String bucketName;
-    private String s3NewsImagesUrl = "https://30xinte-test.s3.eu-north-1.amazonaws.com/news-images/";
+
+    @Value("${aws_s3_bucket_news_url}")
+    private String s3NewsImagesUrl;
 
     @Override
     public void addNews(NewsRequest newsRequest) {
