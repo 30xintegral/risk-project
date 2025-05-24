@@ -3,7 +3,6 @@ package com.demo.riskproject.controller;
 import com.demo.riskproject.dto.request.TaskRequest;
 import com.demo.riskproject.dto.response.TaskResponse;
 import com.demo.riskproject.service.TaskService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,12 +14,20 @@ import java.util.Set;
 @RequiredArgsConstructor
 @RequestMapping("/tasks")
 @Slf4j
+@CrossOrigin(origins = "https://intranet-banking.vercel.app/", allowCredentials = "true")
 public class TaskController {
     private final TaskService taskService;
 
-    @GetMapping("/incomplete-tasks")
-    public Set<TaskResponse> getIncompleteTasksByUser(@RequestParam(name = "id") Long userId, @RequestParam(name = "page") int page, @RequestParam(name = "size") int size) {
-        return taskService.getIncompleteTasksByUser(userId, page, size);
+    @GetMapping("/task/{id}")
+    public TaskResponse getTask(@PathVariable(name = "id") Long taskId) {
+        log.info("Getting task: {}", taskId);
+        return taskService.getTaskById(taskId);
+    }
+    @PostMapping("/add-task")
+    public void addTask(@RequestBody @Valid TaskRequest taskRequest) {
+        log.info("Adding task: {}", taskRequest);
+        taskService.addTask(taskRequest);
+        log.info("Task added: {}", taskRequest);
     }
 
 }

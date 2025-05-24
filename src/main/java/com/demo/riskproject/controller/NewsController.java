@@ -10,7 +10,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/news")
 @Slf4j
+@CrossOrigin(origins = "https://intranet-banking.vercel.app/", allowCredentials = "true")
 public class NewsController {
     private final NewsService newsService;
 
+    @PostMapping("/upload")
+    public void uploadNews(@ModelAttribute NewsRequest newsRequest) {
+        log.info("News upload started");
+        newsService.addNews(newsRequest);
+        log.info("News upload finished");
+    }
 }

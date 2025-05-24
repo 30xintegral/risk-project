@@ -20,15 +20,16 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String name;
 
+    @Column(length = 128)
     private String description;
 
     @Column(nullable = false)
     @Min(value = 1, message = "Point must be at least 1")
     @Max(value = 5, message = "Point must be at most 5")
-    private Byte point;
+    private Integer point;
 
     @OneToMany(mappedBy = "task")
     private Set<UserTask> userTasks = new HashSet<>();

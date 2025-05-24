@@ -58,7 +58,6 @@ public class SecurityConfig {
                     return corsConfiguration;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/test/**").permitAll()
                         .requestMatchers("/api/v1/auth/**",
                                 "/v2/api-docs",
                                 "/v3/api-docs",
@@ -75,7 +74,9 @@ public class SecurityConfig {
                         .requestMatchers("/auth/refresh").permitAll()
                         .requestMatchers("/admin/**").permitAll()
                         .requestMatchers("/news/upload").hasAuthority("CONTENTMANAGER")
-                        .requestMatchers("/tasks/**").authenticated()
+                        .requestMatchers("/tasks/task/").hasAuthority("ADMIN")
+                        .requestMatchers("/tasks/add-task").hasAuthority("ADMIN")
+                        .requestMatchers("/tasks/assign").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

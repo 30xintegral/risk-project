@@ -6,6 +6,7 @@ import com.demo.riskproject.dto.response.TaskResponse;
 import com.demo.riskproject.dto.response.UserTaskResponse;
 import com.demo.riskproject.entity.Task;
 import com.demo.riskproject.entity.User;
+import com.demo.riskproject.entity.UserPrincipal;
 import com.demo.riskproject.entity.UserTask;
 import com.demo.riskproject.exception.NotFoundException;
 import com.demo.riskproject.exception.TerminatedException;
@@ -15,12 +16,14 @@ import com.demo.riskproject.repository.TaskRepository;
 import com.demo.riskproject.repository.UserRepository;
 import com.demo.riskproject.repository.UserTaskRepository;
 import com.demo.riskproject.service.UserTaskService;
+import com.demo.riskproject.service.comparators.DeadlineComparator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -31,6 +34,7 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -49,44 +53,17 @@ public class UserTaskServiceImpl implements UserTaskService {
     @Value("${aws_s3_bucket_name}")
     private String bucketName;
 
-    private final String s3ProjectsUrl = "https://30xinte-test.s3.eu-north-1.amazonaws.com/projects/";
+    @Value("${aws_s3_bucket_projects_url}")
+    private String s3ProjectsUrl;
 
 
 
     @Override
-    public List<UserTaskResponse> getCompletedUserTasks(Long userId, int page, int size) {
+    public List<UserTaskResponse> getUserTasks(Boolean isCompleted, int page, int size) {
+        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = userPrincipal.getId();
         Pageable pageable = PageRequest.of(page, size);
-        Page<UserTask> userTaskPage = userTaskRepository.findAllByUserIdAndIsCompleted(userId, true, pageable);
-        List<UserTask> userTasks = userTaskPage.getContent();
-        List<UserTaskResponse> userTaskResponses = new ArrayList<>();
-        for (UserTask userTask : userTasks) {
-            Task task = userTask.getTask();
-            TaskResponse taskResponse = TaskResponse.builder().
-                    id(task.getId()).
-                    description(task.getDescription()).
-                    name(task.getName()).
-                    point(task.getPoint()).
-                    build();
-
-
-            UserTaskResponse userTaskResponse = UserTaskResponse.builder().
-                    isCompleted(userTask.getIsCompleted()).
-                    task(taskResponse).
-                    userId(userId).
-                    id(userTask.getId()).
-                    submittedAt(userTask.getSubmittedAt()).
-                    projectUrl(s3ProjectsUrl + userTask.getProjectUrl()).
-                    build();
-
-            userTaskResponses.add(userTaskResponse);
-        }
-        return userTaskResponses;
-    }
-
-    @Override
-    public List<UserTaskResponse> getIncompleteUserTasks(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<UserTask> userTaskPage = userTaskRepository.findAllByUserIdAndIsCompleted(userId, false, pageable);
+        Page<UserTask> userTaskPage = userTaskRepository.findAllByUserIdAndIsCompleted(userId, isCompleted, pageable);
         List<UserTask> userTasks = userTaskPage.getContent();
         List<UserTaskResponse> userTaskResponses = new ArrayList<>();
         for (UserTask userTask : userTasks) {
@@ -105,29 +82,32 @@ public class UserTaskServiceImpl implements UserTaskService {
                     id(userTask.getId()).
                     submittedAt(userTask.getSubmittedAt()).
                     projectUrl(s3ProjectsUrl + userTask.getProjectUrl()).
+                    deadline(userTask.getDeadline()).
                     build();
 
             userTaskResponses.add(userTaskResponse);
         }
+        DeadlineComparator deadlineComparator = new DeadlineComparator();
+        userTaskResponses.sort(deadlineComparator); //here we created a deadline comparator for sorting it in ascending order
         return userTaskResponses;
     }
 
     @Override
-    public void assignTasktoUsers(UserTaskRequest userTaskRequest) {
+    public void assignTaskToUsers(UserTaskRequest userTaskRequest) {
         Task task = taskRepository.findById(userTaskRequest.getTaskId()).orElseThrow(() -> new NotFoundException("Task not found"));
         List<User> users = userRepository.findAllById(userTaskRequest.getUserIds());
         //here we also need to inform assigner if there is no specific user id found.
+        if (userTaskRequest.getDeadline() == null) {
+            throw new TerminatedException("Deadline must not be null");
+        }
         List<UserTask> userTasks = users.stream()
                 .map(user -> {
                     UserTask userTask = UserTask.builder().
                     isCompleted(false).
                     task(task).
+                    deadline(userTaskRequest.getDeadline()).
                     user(user).build();
 
-
-//                    UserTask userTask = userTaskMapper.toEntity(userTaskRequest);
-//                    userTask.setTask(task);
-//                    userTask.setSubmittedAt(LocalDateTime.now());
                     //projecturl is going to be null by default
                     return userTask;
                 }).toList();
@@ -150,6 +130,9 @@ public class UserTaskServiceImpl implements UserTaskService {
         }
         if (!found) {
             throw new NotFoundException("Task not found");
+        }
+        if (LocalDateTime.now().isAfter(userTask.getDeadline())){
+            throw new TerminatedException("It already passed the deadline");
         }
         try{
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()

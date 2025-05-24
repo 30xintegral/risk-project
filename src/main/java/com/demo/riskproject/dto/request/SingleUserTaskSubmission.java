@@ -9,9 +9,12 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Setter
 public class SingleUserTaskSubmission {
+    @NotNull
     private Long taskId;
 
+    @NotNull
     private Long userId;
 
+    @NotNull
     private MultipartFile project;
 }

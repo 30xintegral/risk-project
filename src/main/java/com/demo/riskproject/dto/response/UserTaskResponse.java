@@ -18,5 +18,6 @@ public class UserTaskResponse {
     private Boolean isCompleted;
     private String projectUrl;
     private LocalDateTime submittedAt;
+    private LocalDateTime deadline;
 
 }

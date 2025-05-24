@@ -18,5 +18,5 @@ public class TaskRequest {
 
     @Min(1)
     @Max(5)
-    private Byte point;
+    private Integer point;
 }

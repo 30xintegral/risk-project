@@ -14,8 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin/api-v1/")
+@RequestMapping("/admin")
 @Slf4j
+@CrossOrigin(origins = "https://intranet-banking.vercel.app/", allowCredentials = "true")
 public class AdminController {
     private final AuthService authService;
     private final TaskService taskService;
@@ -32,26 +33,6 @@ public class AdminController {
         log.info("content manager register service called from ip:" + request.getRemoteAddr());
         authService.registerContentManager(registrationDTO);
     }
-    @PostMapping("/add-task")
-    public void addTask(@RequestBody @Valid TaskRequest taskRequest) {
-        log.info("Adding task: {}", taskRequest);
-        taskService.addTask(taskRequest);
-        log.info("Task added: {}", taskRequest);
-    }
-    @GetMapping("/task")
-    public TaskResponse getTask(@RequestParam(name = "id") Long taskId) {
-        log.info("Getting task: {}", taskId);
-        return taskService.getTaskById(taskId);
-    }
-    @PostMapping("/upload")
-    public void uploadNews(@ModelAttribute NewsRequest newsRequest) {
-        log.info("News upload started");
-        newsService.addNews(newsRequest);
-        log.info("News upload finished");
-    }
-    @PostMapping("/assign")
-    public void assignTaskToUsers(@RequestBody @Valid UserTaskRequest userTaskRequest) {
-        userTaskService.assignTasktoUsers(userTaskRequest);
-    }
+
 
 }
