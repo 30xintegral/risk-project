@@ -75,13 +75,17 @@ public class UserTaskServiceImpl implements UserTaskService {
                     point(task.getPoint()).
                     build();
 
+            String projectUrl = (userTask.getProjectUrl() == null)
+                    ? null
+                    : s3ProjectsUrl + userTask.getProjectUrl();
+
             UserTaskResponse userTaskResponse = UserTaskResponse.builder().
                     isCompleted(userTask.getIsCompleted()).
                     task(taskResponse).
                     userId(userId).
                     id(userTask.getId()).
                     submittedAt(userTask.getSubmittedAt()).
-                    projectUrl(s3ProjectsUrl + userTask.getProjectUrl()).
+                    projectUrl(projectUrl).
                     deadline(userTask.getDeadline()).
                     build();
 
