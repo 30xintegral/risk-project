@@ -42,7 +42,7 @@ public class NewsServiceImpl implements NewsService {
         try{
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
-                    .key(newsRequest.getImage().getOriginalFilename())
+                    .key("news-images/" + newsRequest.getImage().getOriginalFilename())
                     .contentType(newsRequest.getImage().getContentType())
                     .build();
             InputStream inputStream = new BufferedInputStream(newsRequest.getImage().getInputStream());
