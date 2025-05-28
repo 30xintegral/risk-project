@@ -18,6 +18,4 @@ public class NewsRequest {
     private String content;
 
     private MultipartFile image;
-    @NotNull
-    private LocalDateTime publishedDate;
 }
