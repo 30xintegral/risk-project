@@ -31,19 +31,20 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public TokenResponse login(LoginDTO loginDTO) {
+    public Authentication login(LoginDTO loginDTO) {
         User user = userRepository.findByUsername(loginDTO.getUsername()).orElseThrow(() -> new NotFoundException("User not found"));
         if(user.getDeleted() || user.getLocked()) {
             throw new TerminatedException("User is locked or deleted.");
         }
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        return jwtTokenProvider.generateToken(authentication);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword())
+        );
+        return authentication;
     }
 
     @Override
-    public TokenResponse refresh(TokenRequest tokenRequest) {
-        return jwtTokenProvider.refreshToken(tokenRequest.getRefreshToken());
+    public TokenResponse refresh(String refreshToken) {
+        return jwtTokenProvider.refreshToken(refreshToken);
     }
 
     @Override

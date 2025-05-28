@@ -4,11 +4,12 @@ import com.demo.riskproject.dto.request.LoginDTO;
 import com.demo.riskproject.dto.request.RegistrationDTO;
 import com.demo.riskproject.dto.request.TokenRequest;
 import com.demo.riskproject.dto.response.TokenResponse;
+import org.springframework.security.core.Authentication;
 
 public interface AuthService {
-    TokenResponse login(LoginDTO loginDTO);
+    Authentication login(LoginDTO loginDTO);
 
-    TokenResponse refresh(TokenRequest tokenRequest);
+    TokenResponse refresh(String refreshToken);
 
     void register(RegistrationDTO registrationDTO);
 
