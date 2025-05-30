@@ -18,7 +18,7 @@ import java.util.Set;
 public class TaskController {
     private final TaskService taskService;
 
-    @GetMapping("/task/{id}")
+    @GetMapping("/{id}")
     public TaskResponse getTask(@PathVariable(name = "id") Long taskId) {
         log.info("Getting task: {}", taskId);
         return taskService.getTaskById(taskId);
