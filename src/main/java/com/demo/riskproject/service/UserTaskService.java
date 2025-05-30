@@ -2,12 +2,13 @@ package com.demo.riskproject.service;
 
 import com.demo.riskproject.dto.request.SingleUserTaskSubmission;
 import com.demo.riskproject.dto.request.UserTaskRequest;
+import com.demo.riskproject.dto.response.PaginationResponse;
 import com.demo.riskproject.dto.response.UserTaskResponse;
 
 import java.util.List;
 
 public interface UserTaskService {
-    List<UserTaskResponse> getUserTasks(Boolean isCompleted, int page, int size);
+    PaginationResponse<UserTaskResponse> getUserTasks(Boolean isCompleted, int page, int size);
 
     void assignTaskToUsers(UserTaskRequest userTaskRequest);
 

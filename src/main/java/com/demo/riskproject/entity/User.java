@@ -34,6 +34,9 @@ public class User {
     @OneToMany(mappedBy = "user")
     private Set<UserTask> userTasks = new HashSet<>();
 
+    @Column(nullable = false)
+    private Integer balance;
+
     private Boolean deleted;
 
     private Boolean locked;

@@ -2,6 +2,7 @@ package com.demo.riskproject.controller;
 
 import com.demo.riskproject.dto.request.SingleUserTaskSubmission;
 import com.demo.riskproject.dto.request.UserTaskRequest;
+import com.demo.riskproject.dto.response.PaginationResponse;
 import com.demo.riskproject.dto.response.UserTaskResponse;
 import com.demo.riskproject.service.UserTaskService;
 import jakarta.validation.Valid;
@@ -19,8 +20,8 @@ public class UserTaskController {
 
 
     @GetMapping("/get-user-tasks")
-    public List<UserTaskResponse> getUserTasks(@RequestParam(name = "isCompleted") Boolean isCompleted, @RequestParam(name = "page") int page, @RequestParam(name = "size") int size) {
-        return userTaskService.getUserTasks(isCompleted, page, size);
+    public PaginationResponse<UserTaskResponse> getUserTasks(@RequestParam(name = "isCompleted", required = false) Boolean isCompleted, @RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "size", defaultValue = "10") int size) {
+        return userTaskService.getUserTasks(isCompleted != null ? isCompleted : false, page, size);
     }
 
     @PatchMapping("/submit")

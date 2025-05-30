@@ -2,6 +2,7 @@ package com.demo.riskproject.service.impl;
 
 import com.demo.riskproject.dto.request.SingleUserTaskSubmission;
 import com.demo.riskproject.dto.request.UserTaskRequest;
+import com.demo.riskproject.dto.response.PaginationResponse;
 import com.demo.riskproject.dto.response.TaskResponse;
 import com.demo.riskproject.dto.response.UserTaskResponse;
 import com.demo.riskproject.entity.Task;
@@ -59,13 +60,20 @@ public class UserTaskServiceImpl implements UserTaskService {
 
 
     @Override
-    public List<UserTaskResponse> getUserTasks(Boolean isCompleted, int page, int size) {
+    public PaginationResponse<UserTaskResponse> getUserTasks(Boolean isCompleted, int page, int size) {
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userPrincipal.getId();
+
         Pageable pageable = PageRequest.of(page, size);
         Page<UserTask> userTaskPage = userTaskRepository.findAllByUserIdAndIsCompleted(userId, isCompleted, pageable);
         List<UserTask> userTasks = userTaskPage.getContent();
-        List<UserTaskResponse> userTaskResponses = new ArrayList<>();
+
+        PaginationResponse<UserTaskResponse> userTaskPaginationResponse = new PaginationResponse<>();
+        userTaskPaginationResponse.setPageNumber(userTaskPage.getNumber());
+        userTaskPaginationResponse.setPageSize(userTaskPage.getSize());
+        userTaskPaginationResponse.setTotalPages(userTaskPage.getTotalPages());
+        userTaskPaginationResponse.setTotalElements(userTaskPage.getTotalElements());
+
         for (UserTask userTask : userTasks) {
             Task task = userTask.getTask();
             TaskResponse taskResponse = TaskResponse.builder().
@@ -89,11 +97,11 @@ public class UserTaskServiceImpl implements UserTaskService {
                     deadline(userTask.getDeadline()).
                     build();
 
-            userTaskResponses.add(userTaskResponse);
+            userTaskPaginationResponse.addData(userTaskResponse);
         }
         DeadlineComparator deadlineComparator = new DeadlineComparator();
-        userTaskResponses.sort(deadlineComparator); //here we created a deadline comparator for sorting it in ascending order
-        return userTaskResponses;
+        userTaskPaginationResponse.getData().sort(deadlineComparator); //here we created a deadline comparator for sorting it in ascending order
+        return userTaskPaginationResponse;
     }
 
     @Override
@@ -150,7 +158,8 @@ public class UserTaskServiceImpl implements UserTaskService {
         } catch (Exception e) {
             throw new TerminatedException("An error occurred while uploading task project");
         }
-
+        int newBalance = user.getBalance() + userTask.getTask().getPoint();
+        user.setBalance(newBalance);
         userTask.setProjectUrl(singleUserTaskSubmission.getProject().getOriginalFilename());
         userTask.setSubmittedAt(LocalDateTime.now());
         userTask.setIsCompleted(true);
