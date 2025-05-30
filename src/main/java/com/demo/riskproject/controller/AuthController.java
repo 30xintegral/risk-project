@@ -50,7 +50,7 @@ public class AuthController {
         ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", accessToken)
                 .httpOnly(true)
                 .secure(true) //for prod bc it is needed for https not http
-                .sameSite("Lax") //Sent for top-level navigations and some GET requests (good balance).
+                .sameSite("None") //Sent for top-level navigations and some GET requests (good balance).
                 .path("/")
                 .maxAge(900)  // 900 seconds = 15 minutes
                 .build();
@@ -58,7 +58,7 @@ public class AuthController {
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
                 .secure(true) //for prod bc it is needed for https not http
-                .sameSite("Lax") //Sent for top-level navigations and some GET requests (good balance).
+                .sameSite("None") //Sent for top-level navigations and some GET requests (good balance).
                 .path("/")
                 .maxAge(3600) // 3600 seconds = 1 hour
                 .build();
