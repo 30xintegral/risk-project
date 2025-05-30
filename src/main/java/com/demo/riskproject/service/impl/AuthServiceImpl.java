@@ -12,6 +12,8 @@ import com.demo.riskproject.repository.UserRepository;
 import com.demo.riskproject.security.JwtTokenProvider;
 import com.demo.riskproject.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,6 +25,7 @@ import org.springframework.validation.annotation.Validated;
 @Service
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -56,9 +59,14 @@ public class AuthServiceImpl implements AuthService {
             user.setLocked(false);
             user.setDeleted(false);
             user.addRole(Role.USER);
+            user.setBalance(0);
             userRepository.save(user);
-        }catch (Exception e){
-            throw new TerminatedException("Error while creating user");
+        }catch (DataIntegrityViolationException e) {
+            throw new TerminatedException("User might already exist or invalid data.");
+        }
+        catch (Exception e){
+            log.error("Registration failed", e);
+            throw new TerminatedException("Unexpected error while creating user.");
         }
 
     }
@@ -72,9 +80,13 @@ public class AuthServiceImpl implements AuthService {
             user.setLocked(false);
             user.setDeleted(false);
             user.addRole(Role.ADMIN);
+            user.setBalance(0);
             userRepository.save(user);
+        }catch (DataIntegrityViolationException e) {
+            throw new TerminatedException("User might already exist or invalid data.");
         }catch (Exception e){
-            throw new TerminatedException("Error while creating user");
+            log.error("Registration failed", e);
+            throw new TerminatedException("Unexpected error while creating user.");
         }
     }
 
@@ -87,9 +99,13 @@ public class AuthServiceImpl implements AuthService {
             user.setLocked(false);
             user.setDeleted(false);
             user.addRole(Role.CONTENTMANAGER);
+            user.setBalance(0);
             userRepository.save(user);
+        }catch (DataIntegrityViolationException e) {
+            throw new TerminatedException("User might already exist or invalid data.");
         }catch (Exception e){
-            throw new TerminatedException("Error while creating user");
+            log.error("Registration failed", e);
+            throw new TerminatedException("Unexpected error while creating user.");
         }
     }
 }

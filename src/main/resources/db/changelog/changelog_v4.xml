@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="add-balance-to-users" author="Elvin Mahmudzada">
+        <addColumn tableName="users">
+            <column name="balance" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql>
+            ALTER TABLE users ADD CONSTRAINT chk_users_balance_non_negative CHECK (balance >= 0);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

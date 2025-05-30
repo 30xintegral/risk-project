@@ -2,6 +2,7 @@ package com.demo.riskproject.service.impl;
 
 import com.demo.riskproject.dto.request.NewsRequest;
 import com.demo.riskproject.dto.response.NewsResponse;
+import com.demo.riskproject.dto.response.PaginationResponse;
 import com.demo.riskproject.entity.News;
 import com.demo.riskproject.exception.TerminatedException;
 import com.demo.riskproject.mapper.NewsMapper;
@@ -10,6 +11,7 @@ import com.demo.riskproject.service.NewsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,7 +22,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -63,10 +64,16 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
-    public List<NewsResponse> getNews(int page, int size) {
+    public PaginationResponse<NewsResponse> getNews(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<News> newsList = newsRepository.findAll(pageable).getContent();
-        List<NewsResponse> newsResponses = new ArrayList<>();
+        Page<News> newsPage = newsRepository.findAll(pageable);
+        List<News> newsList = newsPage.getContent();
+
+        PaginationResponse<NewsResponse> newsPaginationResponse = new PaginationResponse<>();
+        newsPaginationResponse.setPageSize(newsPage.getSize());
+        newsPaginationResponse.setPageNumber(newsPage.getNumber());
+        newsPaginationResponse.setTotalPages(newsPage.getTotalPages());
+        newsPaginationResponse.setTotalElements(newsPage.getTotalElements());
         for (News news : newsList) {
             NewsResponse newsResponse = NewsResponse.builder().
                     id(news.getId()).
@@ -75,8 +82,9 @@ public class NewsServiceImpl implements NewsService {
                     publishDate(news.getPublishDate()).
                     imageUrl(s3NewsImagesUrl + news.getImageUrl()).
                     build();
-            newsResponses.add(newsResponse);
+
+            newsPaginationResponse.addData(newsResponse);
         }
-        return newsResponses;
+        return newsPaginationResponse;
     }
 }

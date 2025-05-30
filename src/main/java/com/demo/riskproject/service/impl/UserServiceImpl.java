@@ -3,6 +3,7 @@ package com.demo.riskproject.service.impl;
 import com.demo.riskproject.entity.User;
 import com.demo.riskproject.entity.UserPrincipal;
 import com.demo.riskproject.repository.UserRepository;
+import com.demo.riskproject.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserDetailsService {
+public class UserServiceImpl implements UserDetailsService, UserService {
     private final UserRepository userRepository;
 
 
@@ -45,6 +46,11 @@ public class UserServiceImpl implements UserDetailsService {
         userPrincipal.setUser(user);
 
         return userPrincipal;
+    }
+
+    @Override
+    public Integer getUserBalance(Long userId) {
+        return userRepository.findBalanceById(userId);
     }
 
 }

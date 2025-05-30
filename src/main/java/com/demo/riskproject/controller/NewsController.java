@@ -2,6 +2,7 @@ package com.demo.riskproject.controller;
 
 import com.demo.riskproject.dto.request.NewsRequest;
 import com.demo.riskproject.dto.response.NewsResponse;
+import com.demo.riskproject.dto.response.PaginationResponse;
 import com.demo.riskproject.service.NewsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,7 @@ public class NewsController {
     }
 
     @GetMapping("/all")
-    public List<NewsResponse> getAllNews(@RequestParam int page, @RequestParam int size) {
+    public PaginationResponse<NewsResponse> getAllNews(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         log.info("News fetch started");
         return newsService.getNews(page, size);
     }
