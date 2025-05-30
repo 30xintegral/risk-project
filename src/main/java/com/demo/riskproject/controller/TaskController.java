@@ -6,6 +6,7 @@ import com.demo.riskproject.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
@@ -19,6 +20,7 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public TaskResponse getTask(@PathVariable(name = "id") Long taskId) {
         log.info("Getting task: {}", taskId);
         return taskService.getTaskById(taskId);
