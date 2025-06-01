@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
+
+    @Value("${app.cookie.secure}")
+    private boolean isSecure;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO, HttpServletRequest request, HttpServletResponse response) {
@@ -49,7 +53,7 @@ public class AuthController {
         log.info("refresh token: {}", refreshToken);
         ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", accessToken)
                 .httpOnly(true)
-                .secure(true) //for prod bc it is needed for https not http
+                .secure(isSecure) //for prod bc it is needed for https not http
                 .sameSite("None")
                 .path("/")
                 .maxAge(900)  // 900 seconds = 15 minutes
@@ -57,7 +61,7 @@ public class AuthController {
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
-                .secure(true) //for prod bc it is needed for https not http
+                .secure(isSecure) //for prod bc it is needed for https not http
                 .sameSite("None")
                 .path("/")
                 .maxAge(3600) // 3600 seconds = 1 hour
