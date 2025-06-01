@@ -53,7 +53,7 @@ public class SecurityConfig {
                 {var corsConfiguration = new CorsConfiguration();
                     corsConfiguration.setAllowedOrigins(List.of("https://intranet-banking.vercel.app"));
                     corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-                    corsConfiguration.setAllowedHeaders(List.of("Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With", "X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Proto"));
+                    corsConfiguration.setAllowedHeaders(List.of("Origin", "Cookie", "Content-Type", "Accept", "Authorization", "X-Requested-With", "X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Proto"));
                     corsConfiguration.setAllowCredentials(true);
                     return corsConfiguration;
                 }))
