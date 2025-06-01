@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/news")
 @Slf4j
-@CrossOrigin(origins = "https://intranet-banking.vercel.app", allowCredentials = "true")
+@CrossOrigin(origins = "https://intranet-banking.vercel.app/", allowCredentials = "true")
 public class NewsController {
     private final NewsService newsService;
 
