@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 @Slf4j
-@CrossOrigin(origins = "https://intranet-banking.vercel.app", allowCredentials = "true")
+@CrossOrigin(origins = "https://intranet-banking.vercel.app/", allowCredentials = "true")
 public class AuthController {
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
