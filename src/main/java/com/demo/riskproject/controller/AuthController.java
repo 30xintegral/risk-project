@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 @Slf4j
-@CrossOrigin(origins = "https://intranet-banking.vercel.app/", allowCredentials = "true")
+@CrossOrigin(origins = "https://intranet-banking.vercel.app", allowCredentials = "true")
 public class AuthController {
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -50,7 +50,7 @@ public class AuthController {
         ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", accessToken)
                 .httpOnly(true)
                 .secure(true) //for prod bc it is needed for https not http
-                .sameSite("None") //Sent for top-level navigations and some GET requests (good balance).
+                .sameSite("None")
                 .path("/")
                 .maxAge(900)  // 900 seconds = 15 minutes
                 .build();
@@ -58,7 +58,7 @@ public class AuthController {
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
                 .secure(true) //for prod bc it is needed for https not http
-                .sameSite("None") //Sent for top-level navigations and some GET requests (good balance).
+                .sameSite("None")
                 .path("/")
                 .maxAge(3600) // 3600 seconds = 1 hour
                 .build();
@@ -100,7 +100,7 @@ public class AuthController {
         ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", accessToken)
                 .httpOnly(true)
                 .secure(true) //for prod =true, bc it is needed for https not http
-                .sameSite("Lax") //Sent for top-level navigations and some GET requests (good balance).
+                .sameSite("None")
                 .path("/")
                 .maxAge(900)  // 900 seconds = 15 minutes
                 .build();
@@ -108,7 +108,7 @@ public class AuthController {
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
                 .secure(true) //for prod =true, bc it is needed for https not http
-                .sameSite("Lax") //Sent for top-level navigations and some GET requests (good balance).
+                .sameSite("None")
                 .path("/")
                 .maxAge(3600) // 3600 seconds = 1 hour
                 .build();

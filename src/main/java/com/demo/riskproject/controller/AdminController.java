@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/admin")
 @Slf4j
-@CrossOrigin(origins = "https://intranet-banking.vercel.app/", allowCredentials = "true")
+@CrossOrigin(origins = "https://intranet-banking.vercel.app", allowCredentials = "true")
 public class AdminController {
     private final AuthService authService;
     private final TaskService taskService;
