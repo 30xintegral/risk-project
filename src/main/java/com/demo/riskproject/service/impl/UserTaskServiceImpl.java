@@ -18,6 +18,7 @@ import com.demo.riskproject.repository.UserRepository;
 import com.demo.riskproject.repository.UserTaskRepository;
 import com.demo.riskproject.service.UserTaskService;
 import com.demo.riskproject.service.comparators.DeadlineComparator;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,10 +60,13 @@ public class UserTaskServiceImpl implements UserTaskService {
 
 
 
+
     @Override
     public PaginationResponse<UserTaskResponse> getUserTasks(Boolean isCompleted, int page, int size) {
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userPrincipal.getId();
+        User user = userPrincipal.getUser();
+
 
         Pageable pageable = PageRequest.of(page, size);
         Page<UserTask> userTaskPage = userTaskRepository.findAllByUserIdAndIsCompleted(userId, isCompleted, pageable);
@@ -83,9 +87,10 @@ public class UserTaskServiceImpl implements UserTaskService {
                     point(task.getPoint()).
                     build();
 
+            String key = String.format("user-%d/task-%d/%s", user.getId(), userTask.getTask().getId(), userTask.getProjectUrl());
             String projectUrl = (userTask.getProjectUrl() == null)
                     ? null
-                    : s3ProjectsUrl + userTask.getProjectUrl();
+                    : s3ProjectsUrl + key;
 
             UserTaskResponse userTaskResponse = UserTaskResponse.builder().
                     isCompleted(userTask.getIsCompleted()).
@@ -128,6 +133,7 @@ public class UserTaskServiceImpl implements UserTaskService {
     }
 
     @Override
+    @Transactional
     public void submitTask(SingleUserTaskSubmission singleUserTaskSubmission) {
         User user = userRepository.findById(singleUserTaskSubmission.getUserId()).orElseThrow(()-> new NotFoundException("User not found"));
         List<UserTask> userTasks = userTaskRepository.findAllByUserIdAndIsCompleted(singleUserTaskSubmission.getUserId(), false);
@@ -146,10 +152,11 @@ public class UserTaskServiceImpl implements UserTaskService {
         if (LocalDateTime.now().isAfter(userTask.getDeadline())){
             throw new TerminatedException("It already passed the deadline");
         }
+        String key = String.format("user-%d/task-%d/%s", user.getId(), userTask.getTask().getId(), singleUserTaskSubmission.getProject().getOriginalFilename());
         try{
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
-                    .key("projects/"+singleUserTaskSubmission.getProject().getOriginalFilename())
+                    .key("projects/"+key)
                     .contentType(singleUserTaskSubmission.getProject().getContentType())
                     .build();
             InputStream inputStream = new BufferedInputStream(singleUserTaskSubmission.getProject().getInputStream());
