@@ -135,14 +135,18 @@ public class UserTaskServiceImpl implements UserTaskService {
     @Override
     @Transactional
     public void submitTask(SingleUserTaskSubmission singleUserTaskSubmission) {
+        log.info("submission started");
         User user = userRepository.findById(singleUserTaskSubmission.getUserId()).orElseThrow(()-> new NotFoundException("User not found"));
+        log.info("user found. user id: {}", user.getId());
         List<UserTask> userTasks = userTaskRepository.findAllByUserIdAndIsCompleted(singleUserTaskSubmission.getUserId(), false);
+        log.info("user tasks list is fetched");
         UserTask userTask = new UserTask();
         boolean found = false;
         for (UserTask userTaskIterator : userTasks) {
             if (userTaskIterator.getTask().getId().equals(singleUserTaskSubmission.getTaskId())) {
                 userTask = userTaskIterator;
                 found = true;
+                log.info("task is on the user's list. task id: {}", userTask.getTask().getId());
                 break;
             }
         }
@@ -152,7 +156,9 @@ public class UserTaskServiceImpl implements UserTaskService {
         if (LocalDateTime.now().isAfter(userTask.getDeadline())){
             throw new TerminatedException("It already passed the deadline");
         }
+        log.info("creating key prefix");
         String key = String.format("user-%d/task-%d/%s", user.getId(), userTask.getTask().getId(), singleUserTaskSubmission.getProject().getOriginalFilename());
+        log.info("key prefix is: {}", key);
         try{
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
@@ -165,13 +171,19 @@ public class UserTaskServiceImpl implements UserTaskService {
         } catch (Exception e) {
             throw new TerminatedException("An error occurred while uploading task project");
         }
+        log.info("updating user balance");
         int newBalance = user.getBalance() + userTask.getTask().getPoint();
+        log.info("setting new balance");
         user.setBalance(newBalance);
+        userRepository.save(user);
+        log.info("user updated. new balance: {}", newBalance);
+        log.info("updating user-task data");
         userTask.setProjectUrl(singleUserTaskSubmission.getProject().getOriginalFilename());
         userTask.setSubmittedAt(LocalDateTime.now());
         userTask.setIsCompleted(true);
-
+        log.info("updating user-task completed");
         userTaskRepository.save(userTask);
+        log.info("user task updated");
     }
 
 }
