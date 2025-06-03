@@ -59,7 +59,7 @@ public class SecurityConfig {
                     return corsConfiguration;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS).permitAll()
+//                        .requestMatchers(HttpMethod.OPTIONS).permitAll()
                         .requestMatchers("/api/v1/auth/**",
                                 "/v2/api-docs",
                                 "/v3/api-docs",
