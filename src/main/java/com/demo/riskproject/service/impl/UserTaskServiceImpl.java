@@ -131,7 +131,6 @@ public class UserTaskServiceImpl implements UserTaskService {
     }
 
     @Override
-    @Transactional
     public void submitTask(SingleUserTaskSubmission singleUserTaskSubmission) {
         log.info("submission started");
         User user = userRepository.findById(singleUserTaskSubmission.getUserId()).orElseThrow(()-> new NotFoundException("User not found"));
