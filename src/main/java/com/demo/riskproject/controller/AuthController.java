@@ -29,8 +29,6 @@ public class AuthController {
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
 
-    @Value("${app.cookie.secure}")
-    private boolean isSecure;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO, HttpServletRequest request, HttpServletResponse response) {
@@ -53,7 +51,7 @@ public class AuthController {
         log.info("refresh token: {}", refreshToken);
         ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", accessToken)
                 .httpOnly(true)
-                .secure(isSecure) //for prod bc it is needed for https not http
+                .secure(true) //for prod bc it is needed for https not http
                 .sameSite("None")
                 .path("/")
                 .maxAge(900)  // 900 seconds = 15 minutes
@@ -61,7 +59,7 @@ public class AuthController {
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
-                .secure(isSecure) //for prod bc it is needed for https not http
+                .secure(true) //for prod bc it is needed for https not http
                 .sameSite("None")
                 .path("/")
                 .maxAge(3600) // 3600 seconds = 1 hour
