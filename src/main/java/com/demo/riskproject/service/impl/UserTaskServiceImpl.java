@@ -18,7 +18,6 @@ import com.demo.riskproject.repository.UserRepository;
 import com.demo.riskproject.repository.UserTaskRepository;
 import com.demo.riskproject.service.UserTaskService;
 import com.demo.riskproject.service.comparators.DeadlineComparator;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -35,8 +35,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -133,6 +131,7 @@ public class UserTaskServiceImpl implements UserTaskService {
     }
 
     @Override
+    @Transactional
     public void submitTask(SingleUserTaskSubmission singleUserTaskSubmission) {
         log.info("submission started");
         User user = userRepository.findById(singleUserTaskSubmission.getUserId()).orElseThrow(()-> new NotFoundException("User not found"));
