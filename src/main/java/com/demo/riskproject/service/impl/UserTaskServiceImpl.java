@@ -139,7 +139,7 @@ public class UserTaskServiceImpl implements UserTaskService {
         User user = userRepository.findById(singleUserTaskSubmission.getUserId()).orElseThrow(()-> new NotFoundException("User not found"));
         log.info("user found. user id: {}", user.getId());
         List<UserTask> userTasks = userTaskRepository.findAllByUserIdAndIsCompleted(singleUserTaskSubmission.getUserId(), false);
-        log.info("user tasks list is fetched");
+        log.info("user tasks list is fetched. size: {}", userTasks.size());
         UserTask userTask = new UserTask();
         boolean found = false;
         for (UserTask userTaskIterator : userTasks) {
