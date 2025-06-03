@@ -18,7 +18,6 @@ import com.demo.riskproject.repository.UserRepository;
 import com.demo.riskproject.repository.UserTaskRepository;
 import com.demo.riskproject.service.UserTaskService;
 import com.demo.riskproject.service.comparators.DeadlineComparator;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -35,8 +35,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -143,6 +141,11 @@ public class UserTaskServiceImpl implements UserTaskService {
         UserTask userTask = new UserTask();
         boolean found = false;
         for (UserTask userTaskIterator : userTasks) {
+            if (userTaskIterator.getTask() == null) {
+                log.warn("Task is null for userTask id {}", userTaskIterator.getId());
+                continue;
+            }
+            log.debug("Comparing {} with {}", userTaskIterator.getTask().getId(), singleUserTaskSubmission.getTaskId());
             if (userTaskIterator.getTask().getId().equals(singleUserTaskSubmission.getTaskId())) {
                 userTask = userTaskIterator;
                 found = true;
@@ -159,13 +162,13 @@ public class UserTaskServiceImpl implements UserTaskService {
         log.info("creating key prefix");
         String key = String.format("user-%d/task-%d/%s", user.getId(), userTask.getTask().getId(), singleUserTaskSubmission.getProject().getOriginalFilename());
         log.info("key prefix is: {}", key);
-        try{
+        try(InputStream inputStream = new BufferedInputStream(singleUserTaskSubmission.getProject().getInputStream())){
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key("projects/"+key)
                     .contentType(singleUserTaskSubmission.getProject().getContentType())
                     .build();
-            InputStream inputStream = new BufferedInputStream(singleUserTaskSubmission.getProject().getInputStream());
+
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, singleUserTaskSubmission.getProject().getSize()));
 
         } catch (Exception e) {
