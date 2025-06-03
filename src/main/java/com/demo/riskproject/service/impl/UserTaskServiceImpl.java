@@ -133,7 +133,6 @@ public class UserTaskServiceImpl implements UserTaskService {
     }
 
     @Override
-    @Transactional
     public void submitTask(SingleUserTaskSubmission singleUserTaskSubmission) {
         log.info("submission started");
         User user = userRepository.findById(singleUserTaskSubmission.getUserId()).orElseThrow(()-> new NotFoundException("User not found"));
@@ -143,6 +142,11 @@ public class UserTaskServiceImpl implements UserTaskService {
         UserTask userTask = new UserTask();
         boolean found = false;
         for (UserTask userTaskIterator : userTasks) {
+            if (userTaskIterator.getTask() == null) {
+                log.warn("Task is null for userTask id {}", userTaskIterator.getId());
+                continue;
+            }
+            log.debug("Comparing {} with {}", userTaskIterator.getTask().getId(), singleUserTaskSubmission.getTaskId());
             if (userTaskIterator.getTask().getId().equals(singleUserTaskSubmission.getTaskId())) {
                 userTask = userTaskIterator;
                 found = true;
@@ -159,13 +163,13 @@ public class UserTaskServiceImpl implements UserTaskService {
         log.info("creating key prefix");
         String key = String.format("user-%d/task-%d/%s", user.getId(), userTask.getTask().getId(), singleUserTaskSubmission.getProject().getOriginalFilename());
         log.info("key prefix is: {}", key);
-        try{
+        try(InputStream inputStream = new BufferedInputStream(singleUserTaskSubmission.getProject().getInputStream())){
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key("projects/"+key)
                     .contentType(singleUserTaskSubmission.getProject().getContentType())
                     .build();
-            InputStream inputStream = new BufferedInputStream(singleUserTaskSubmission.getProject().getInputStream());
+
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, singleUserTaskSubmission.getProject().getSize()));
 
         } catch (Exception e) {
