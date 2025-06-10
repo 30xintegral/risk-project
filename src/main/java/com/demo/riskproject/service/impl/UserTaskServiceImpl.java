@@ -4,6 +4,7 @@ import com.demo.riskproject.dto.request.SingleUserTaskSubmission;
 import com.demo.riskproject.dto.request.UserTaskRequest;
 import com.demo.riskproject.dto.response.PaginationResponse;
 import com.demo.riskproject.dto.response.TaskResponse;
+import com.demo.riskproject.dto.response.UserMonthlySubmissionStat;
 import com.demo.riskproject.dto.response.UserTaskResponse;
 import com.demo.riskproject.entity.Task;
 import com.demo.riskproject.entity.User;
@@ -35,7 +36,11 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -128,6 +133,34 @@ public class UserTaskServiceImpl implements UserTaskService {
                 }).toList();
         log.info("user tasks list is ready");
         userTaskRepository.saveAll(userTasks);
+    }
+
+    @Override
+    public List<UserMonthlySubmissionStat> getMonthlyStatsInRange(Long userId, YearMonth from, YearMonth to) {
+        LocalDateTime start = from.atDay(1).atStartOfDay();
+        LocalDateTime end = to.atEndOfMonth().atTime(23, 59, 59);
+
+        List<Object[]> rawStats = userTaskRepository.findMonthlySubmissionStatsInRange(userId, start, end);
+
+        // Map existing months from DB
+        Map<YearMonth, Long> statsMap = new HashMap<>();
+        for (Object[] row : rawStats) {
+            int year = ((Number) row[0]).intValue();
+            int month = ((Number) row[1]).intValue();
+            long count = ((Number) row[2]).longValue();
+            statsMap.put(YearMonth.of(year, month), count);
+        }
+
+        // Fill in months with 0 if missing
+        List<UserMonthlySubmissionStat> results = new ArrayList<>();
+        YearMonth current = from;
+        while (!current.isAfter(to)) {
+            long count = statsMap.getOrDefault(current, 0L);
+            results.add(new UserMonthlySubmissionStat(current.getYear(), current.getMonthValue(), count));
+            current = current.plusMonths(1);
+        }
+
+        return results;
     }
 
     @Override

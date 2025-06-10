@@ -3,13 +3,21 @@ package com.demo.riskproject.controller;
 import com.demo.riskproject.dto.request.SingleUserTaskSubmission;
 import com.demo.riskproject.dto.request.UserTaskRequest;
 import com.demo.riskproject.dto.response.PaginationResponse;
+import com.demo.riskproject.dto.response.UserMonthlySubmissionStat;
 import com.demo.riskproject.dto.response.UserTaskResponse;
+import com.demo.riskproject.entity.UserPrincipal;
+import com.demo.riskproject.exception.NotFoundException;
+import com.demo.riskproject.exception.TerminatedException;
 import com.demo.riskproject.service.UserTaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.YearMonth;
 import java.util.List;
 
 @RestController
@@ -39,4 +47,26 @@ public class UserTaskController {
         userTaskService.assignTaskToUsers(userTaskRequest);
         log.info("task assignment completed");
     }
+
+    @GetMapping("/users/submission-stats")
+    public ResponseEntity<List<UserMonthlySubmissionStat>> getStatsBetweenMonths(
+            @RequestParam String from,  // format: 2024-02
+            @RequestParam String to     // format: 2025-06
+    ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof UserPrincipal userDetails) {
+            userId = userDetails.getId();
+        }
+        if (userId == null) {
+            throw new NotFoundException("User not found");
+        }
+
+        YearMonth fromMonth = YearMonth.parse(from);
+        YearMonth toMonth = YearMonth.parse(to);
+
+        List<UserMonthlySubmissionStat> stats = userTaskService.getMonthlyStatsInRange(userId, fromMonth, toMonth);
+        return ResponseEntity.ok(stats);
+    }
+
 }
