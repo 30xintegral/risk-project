@@ -5,6 +5,8 @@ import com.demo.riskproject.entity.UserTask;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 
@@ -24,4 +26,21 @@ public interface UserTaskRepository extends JpaRepository<UserTask, Long> {
 
     Page<UserTask> findAllByDeadlineIsAfter(LocalDateTime deadlineAfter, Pageable pageable);
 
+    @Query(value = """
+    SELECT 
+        EXTRACT(YEAR FROM submitted_at) AS year,
+        EXTRACT(MONTH FROM submitted_at) AS month,
+        COUNT(*) AS count
+    FROM user_tasks
+    WHERE user_id = :userId
+      AND is_completed = true
+      AND submitted_at BETWEEN :startDate AND :endDate
+    GROUP BY year, month
+    ORDER BY year, month
+""", nativeQuery = true)
+    List<Object[]> findMonthlySubmissionStatsInRange(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
 }
