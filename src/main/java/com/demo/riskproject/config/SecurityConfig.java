@@ -79,6 +79,7 @@ public class SecurityConfig {
                         .requestMatchers("/tasks/add-task").hasAuthority("ADMIN")
                         .requestMatchers("/tasks/assign").hasAuthority("ADMIN")
                         .requestMatchers("/user/all").hasAuthority("ADMIN")
+                        .requestMatchers("/tasks/all").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
