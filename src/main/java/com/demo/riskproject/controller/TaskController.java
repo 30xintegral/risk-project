@@ -1,6 +1,7 @@
 package com.demo.riskproject.controller;
 
 import com.demo.riskproject.dto.request.TaskRequest;
+import com.demo.riskproject.dto.response.PaginationResponse;
 import com.demo.riskproject.dto.response.TaskResponse;
 import com.demo.riskproject.service.TaskService;
 import jakarta.validation.Valid;
@@ -30,6 +31,12 @@ public class TaskController {
         log.info("Adding task: {}", taskRequest);
         taskService.addTask(taskRequest);
         log.info("Task added: {}", taskRequest);
+    }
+
+    @GetMapping("/all")
+    public PaginationResponse<TaskResponse> getAllTasks(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
+        log.info("Getting all tasks");
+        return taskService.findAllTasks(page, size);
     }
 
 }

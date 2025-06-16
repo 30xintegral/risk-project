@@ -1,14 +1,22 @@
 package com.demo.riskproject.service.impl;
 
+import com.demo.riskproject.dto.response.PaginationResponse;
+import com.demo.riskproject.dto.response.UserListResponse;
 import com.demo.riskproject.entity.User;
 import com.demo.riskproject.entity.UserPrincipal;
 import com.demo.riskproject.repository.UserRepository;
 import com.demo.riskproject.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -53,4 +61,32 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         return userRepository.findBalanceById(userId);
     }
 
+    @Override
+    public PaginationResponse<UserListResponse> findAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<User> users = userRepository.findAll(pageable);
+
+        List<User> userList = users.getContent();
+        List<UserListResponse> userListResponses = new ArrayList<>();
+
+
+        PaginationResponse<UserListResponse> paginationResponse = new PaginationResponse<>();
+
+        paginationResponse.setPageNumber(pageable.getPageNumber());
+        paginationResponse.setPageSize(pageable.getPageSize());
+        paginationResponse.setTotalElements(users.getTotalElements());
+        paginationResponse.setTotalPages(users.getTotalPages());
+
+        for (User user : userList) {
+            UserListResponse userListResponse = new UserListResponse();
+            userListResponse.setId(user.getId());
+            userListResponse.setUsername(user.getUsername());
+            userListResponse.setRoleSet(user.getRoles());
+            userListResponses.add(userListResponse);
+        }
+        paginationResponse.setData(userListResponses);
+
+        return paginationResponse;
+    }
 }

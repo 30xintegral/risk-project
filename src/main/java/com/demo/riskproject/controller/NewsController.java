@@ -26,7 +26,7 @@ public class NewsController {
     }
 
     @GetMapping("/all")
-    public PaginationResponse<NewsResponse> getAllNews(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public PaginationResponse<NewsResponse> getAllNews(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
         log.info("News fetch started");
         return newsService.getNews(page, size);
     }
