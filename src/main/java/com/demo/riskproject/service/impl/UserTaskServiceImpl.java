@@ -2,10 +2,7 @@ package com.demo.riskproject.service.impl;
 
 import com.demo.riskproject.dto.request.SingleUserTaskSubmission;
 import com.demo.riskproject.dto.request.UserTaskRequest;
-import com.demo.riskproject.dto.response.PaginationResponse;
-import com.demo.riskproject.dto.response.TaskResponse;
-import com.demo.riskproject.dto.response.UserMonthlySubmissionStat;
-import com.demo.riskproject.dto.response.UserTaskResponse;
+import com.demo.riskproject.dto.response.*;
 import com.demo.riskproject.entity.Task;
 import com.demo.riskproject.entity.User;
 import com.demo.riskproject.entity.UserPrincipal;
@@ -49,11 +46,8 @@ import java.util.Map;
 public class UserTaskServiceImpl implements UserTaskService {
     private final UserTaskRepository userTaskRepository;
     private final TaskRepository taskRepository;
-    private final UserTaskMapper userTaskMapper;
-    private final TaskMapper taskMapper;
     private final UserRepository userRepository;
     private final S3Client s3Client;
-
 
     @Value("${aws_s3_bucket_name}")
     private String bucketName;
@@ -61,15 +55,11 @@ public class UserTaskServiceImpl implements UserTaskService {
     @Value("${aws_s3_bucket_projects_url}")
     private String s3ProjectsUrl;
 
-
-
-
     @Override
     public PaginationResponse<UserTaskResponse> getUserTasks(Boolean isCompleted, int page, int size) {
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userPrincipal.getId();
         User user = userPrincipal.getUser();
-
 
         Pageable pageable = PageRequest.of(page, size);
         Page<UserTask> userTaskPage = userTaskRepository.findAllByUserIdAndIsCompleted(userId, isCompleted, pageable);
@@ -108,7 +98,7 @@ public class UserTaskServiceImpl implements UserTaskService {
             userTaskPaginationResponse.addData(userTaskResponse);
         }
         DeadlineComparator deadlineComparator = new DeadlineComparator();
-        userTaskPaginationResponse.getData().sort(deadlineComparator); //here we created a deadline comparator for sorting it in ascending order
+        userTaskPaginationResponse.getData().sort(deadlineComparator);
         return userTaskPaginationResponse;
     }
 
@@ -116,7 +106,7 @@ public class UserTaskServiceImpl implements UserTaskService {
     public void assignTaskToUsers(UserTaskRequest userTaskRequest) {
         Task task = taskRepository.findById(userTaskRequest.getTaskId()).orElseThrow(() -> new NotFoundException("Task not found"));
         List<User> users = userRepository.findAllById(userTaskRequest.getUserIds());
-        //here we also need to inform assigner if there is no specific user id found.
+
         if (userTaskRequest.getDeadline() == null) {
             throw new TerminatedException("Deadline must not be null");
         }
@@ -128,7 +118,6 @@ public class UserTaskServiceImpl implements UserTaskService {
                     deadline(userTaskRequest.getDeadline()).
                     user(user).build();
 
-                    //projecturl is going to be null by default
                     return userTask;
                 }).toList();
         log.info("user tasks list is ready");
@@ -142,7 +131,6 @@ public class UserTaskServiceImpl implements UserTaskService {
 
         List<Object[]> rawStats = userTaskRepository.findMonthlySubmissionStatsInRange(userId, start, end);
 
-        // Map existing months from DB
         Map<YearMonth, Long> statsMap = new HashMap<>();
         for (Object[] row : rawStats) {
             int year = ((Number) row[0]).intValue();
@@ -151,7 +139,6 @@ public class UserTaskServiceImpl implements UserTaskService {
             statsMap.put(YearMonth.of(year, month), count);
         }
 
-        // Fill in months with 0 if missing
         List<UserMonthlySubmissionStat> results = new ArrayList<>();
         YearMonth current = from;
         while (!current.isAfter(to)) {
@@ -219,6 +206,32 @@ public class UserTaskServiceImpl implements UserTaskService {
         log.info("updating user-task completed");
         userTaskRepository.save(userTask);
         log.info("user task updated");
+    }
+
+    @Override
+    public List<UserMonthlyBonusStat> getMonthlyBonusStatsInRange(Long userId, YearMonth from, YearMonth to) {
+        LocalDateTime start = from.atDay(1).atStartOfDay();
+        LocalDateTime end = to.atEndOfMonth().atTime(23, 59, 59);
+
+        List<Object[]> rawStats = userTaskRepository.findMonthlyBonusStatsInRange(userId, start, end);
+
+        Map<YearMonth, Integer> bonusMap = new HashMap<>();
+        for (Object[] row : rawStats) {
+            int year = ((Number) row[0]).intValue();
+            int month = ((Number) row[1]).intValue();
+            int totalBonus = ((Number) row[2]).intValue();
+            bonusMap.put(YearMonth.of(year, month), totalBonus);
+        }
+
+        List<UserMonthlyBonusStat> results = new ArrayList<>();
+        YearMonth current = from;
+        while (!current.isAfter(to)) {
+            int totalBonus = bonusMap.getOrDefault(current, 0);
+            results.add(new UserMonthlyBonusStat(current.getYear(), current.getMonthValue(), totalBonus));
+            current = current.plusMonths(1);
+        }
+
+        return results;
     }
 
 }

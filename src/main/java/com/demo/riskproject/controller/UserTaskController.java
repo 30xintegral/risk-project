@@ -48,25 +48,5 @@ public class UserTaskController {
         log.info("task assignment completed");
     }
 
-    @GetMapping("/users/submission-stats")
-    public ResponseEntity<List<UserMonthlySubmissionStat>> getStatsBetweenMonths(
-            @RequestParam String from,  // format: 2024-02
-            @RequestParam String to     // format: 2025-06
-    ) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = null;
-        if (authentication != null && authentication.getPrincipal() instanceof UserPrincipal userDetails) {
-            userId = userDetails.getId();
-        }
-        if (userId == null) {
-            throw new NotFoundException("User not found");
-        }
-
-        YearMonth fromMonth = YearMonth.parse(from);
-        YearMonth toMonth = YearMonth.parse(to);
-
-        List<UserMonthlySubmissionStat> stats = userTaskService.getMonthlyStatsInRange(userId, fromMonth, toMonth);
-        return ResponseEntity.ok(stats);
-    }
 
 }

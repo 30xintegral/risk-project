@@ -1,6 +1,7 @@
 package com.demo.riskproject.service.impl;
 
 import com.demo.riskproject.dto.request.TaskRequest;
+import com.demo.riskproject.dto.response.PaginationResponse;
 import com.demo.riskproject.dto.response.TaskResponse;
 import com.demo.riskproject.dto.response.UserTaskResponse;
 import com.demo.riskproject.entity.Task;
@@ -12,9 +13,13 @@ import com.demo.riskproject.repository.TaskRepository;
 import com.demo.riskproject.service.TaskService;
 import com.demo.riskproject.service.UserTaskService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,5 +56,29 @@ public class TaskServiceImpl implements TaskService {
                 point(task.getPoint()).
                 description(task.getDescription()).
                 build();
+    }
+
+    @Override
+    public PaginationResponse<TaskResponse> findAllTasks(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Task> tasks = taskRepository.findAll(pageable);
+        List<Task> taskList = tasks.getContent();
+        List<TaskResponse> taskResponses = new ArrayList<>();
+        PaginationResponse<TaskResponse> paginationResponse = new PaginationResponse<>();
+        paginationResponse.setTotalElements(tasks.getTotalElements());
+        paginationResponse.setTotalPages(tasks.getTotalPages());
+        paginationResponse.setPageSize(pageable.getPageSize());
+        paginationResponse.setPageNumber(pageable.getPageNumber());
+
+        for (Task task : taskList) {
+            TaskResponse taskResponse = new TaskResponse();
+            taskResponse.setId(task.getId());
+            taskResponse.setName(task.getName());
+            taskResponse.setDescription(task.getDescription());
+            taskResponse.setPoint(task.getPoint());
+            taskResponses.add(taskResponse);
+        }
+        paginationResponse.setData(taskResponses);
+        return paginationResponse;
     }
 }

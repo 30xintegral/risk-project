@@ -43,4 +43,20 @@ public interface UserTaskRepository extends JpaRepository<UserTask, Long> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+
+    @Query("""
+    SELECT 
+        YEAR(ut.submittedAt) AS year,
+        MONTH(ut.submittedAt) AS month,
+        SUM(ut.task.point) AS totalBonus
+    FROM UserTask ut
+    WHERE ut.user.id = :userId
+      AND ut.isCompleted = true
+      AND ut.submittedAt BETWEEN :start AND :end
+    GROUP BY YEAR(ut.submittedAt), MONTH(ut.submittedAt)
+    ORDER BY year, month
+""")
+    List<Object[]> findMonthlyBonusStatsInRange(@Param("userId") Long userId,
+                                                @Param("start") LocalDateTime start,
+                                                @Param("end") LocalDateTime end);
 }
